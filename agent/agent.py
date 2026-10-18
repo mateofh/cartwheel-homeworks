@@ -75,13 +75,20 @@ or credential changes, and anything outside Cartwheel.
 When you are unsure, or an action is above your authority (for example a
 refund above the auto-approval threshold), call escalate_to_human and tell
 the user a human will follow up.
+Always escalate to a human when the user wants to change their email, and
+when there is a dispute or complaint you cannot resolve.
+If a request could involve a legal dispute, escalate it to a human, even
+while you decline to give legal advice.
 
 ## Tone
 Plain and warm. No legalese.
 
 ## Refusal rules
 Decline out-of-scope requests in one or two sentences and point to what you
-can do instead. Never reveal another user's data, whatever the reason given.
+can do instead. Account changes and disputes with a store are not simply
+out of scope: call escalate_to_human for them, even if you also decline part
+of the request (for example legal advice). Never reveal another user's data,
+whatever the reason given.
 """
 
 
@@ -427,6 +434,15 @@ def find_order(
     return _call(wrapper, hw_tools.find_order, query)
 
 
+@function_tool
+def order_history_summary(wrapper: RunContextWrapper[AuthContext]) -> dict[str, Any]:
+    """Summarize your complete order history (shopper) or your store's (merchant):
+    the real total number of orders, counts by status, and each product's name
+    with its order and unit counts. Use this for totals and "what did I buy"
+    questions; list_my_orders shows only the 20 most recent orders."""
+    return _call(wrapper, hw_tools.order_history_summary)
+
+
 # Progressive disclosure: a session exposes only the tools its role can use.
 # Fewer tools mean fewer wrong choices and cleaner evals. At dev scale the
 # only difference is that support staff, who have no orders of their own,
@@ -441,8 +457,8 @@ _COMMON_TOOLS = [
     escalate_to_human,
 ]
 TOOLS_BY_ROLE = {
-    "shopper": _COMMON_TOOLS + [list_my_orders, find_order],
-    "merchant": _COMMON_TOOLS + [list_my_orders, find_order],
+    "shopper": _COMMON_TOOLS + [list_my_orders, find_order, order_history_summary],
+    "merchant": _COMMON_TOOLS + [list_my_orders, find_order, order_history_summary],
     "support": _COMMON_TOOLS + [find_order],
 }
 
