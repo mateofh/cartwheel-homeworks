@@ -54,6 +54,10 @@ def analysis_state(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     dst = tmp_path / "state"
     shutil.copytree(src, dst)
     monkeypatch.setenv("CARTWHEEL_ANALYSIS_STATE", str(dst))
+    # Keys loaded from .env by earlier tests would route reads to a live
+    # Langfuse instead of the demo state.
+    for key in ("LANGFUSE_PUBLIC_KEY", "LANGFUSE_SECRET_KEY", "LANGFUSE_HOST"):
+        monkeypatch.delenv(key, raising=False)
     return dst
 
 
